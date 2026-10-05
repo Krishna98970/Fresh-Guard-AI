@@ -1,0 +1,9 @@
+"use client";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { BarChart3, ClipboardCheck, FileText, HelpCircle, LayoutDashboard, LogOut, Package, Settings, X } from "lucide-react";
+import { useAppState } from "./AppProviders";
+
+const links = [{ href: "/dashboard", label: "Dashboard", icon: LayoutDashboard }, { href: "/inspect", label: "Inspect", icon: ClipboardCheck }, { href: "/inventory", label: "Inventory", icon: Package }, { href: "/history", label: "History", icon: FileText }, { href: "/analytics", label: "Analytics", icon: BarChart3 }];
+const secondary = [{ href: "/reports", label: "Reports", icon: FileText }, { href: "/settings", label: "Settings", icon: Settings }, { href: "/help", label: "Help", icon: HelpCircle }];
+export default function Sidebar({ mobileOpen, closeMobile }: { mobileOpen: boolean; closeMobile: () => void }) { const pathname = usePathname(); const { logout } = useAppState(); const nav = (items: typeof links) => items.map(({ href, label, icon: Icon }) => <Link onClick={closeMobile} className={pathname === href ? "nav-link active" : "nav-link"} href={href} key={href}><Icon size={18} />{label}</Link>); return <aside className={`sidebar ${mobileOpen ? "open" : ""}`}><div className="sidebar-brand"><span className="brand-mark"><ClipboardCheck size={19} /></span><span>FreshGuard <b>AI</b></span><button className="mobile-close icon-button" aria-label="Close navigation" onClick={closeMobile}><X size={18} /></button></div><div className="warehouse-pill"><span className="online-dot" /><div><small>Active warehouse</small><strong>WH-MTH-001</strong></div></div><nav><p className="nav-label">Workspace</p>{nav(links)}<p className="nav-label secondary-label">Manage</p>{nav(secondary)}</nav><button className="logout-link" onClick={logout}><LogOut size={18} />Logout</button></aside>; }
