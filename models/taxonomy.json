@@ -1,0 +1,65 @@
+{
+  "taxonomyVersion": "2.1",
+  "categories": [
+    {
+      "category": "POME_FRUIT",
+      "species": ["Malus domestica (Apple)", "Pyrus (Pear)"],
+      "varieties": ["Honeycrisp", "Golden Delicious", "Gala", "Fuji", "Granny Smith"],
+      "spectralRanges": {
+        "healthyRedHue": [340, 15],
+        "healthyYellowHue": [38, 70],
+        "healthyGreenHue": [71, 140],
+        "brownRotLesionHue": [14, 36]
+      },
+      "geometry": {
+        "aspectRatioRange": [0.75, 1.35],
+        "morphology": "Globose / Subglobose"
+      },
+      "defectVulnerabilities": [
+        "Monilinia fructigena (Brown Rot)",
+        "Venturia inaequalis (Apple Scab)",
+        "Compression bruising",
+        "Lenticel breakdown"
+      ]
+    },
+    {
+      "category": "BERRIES",
+      "species": ["Fragaria × ananassa (Strawberry)", "Vaccinium (Blueberry)"],
+      "varieties": ["California Sweet", "Albion", "Chandler"],
+      "spectralRanges": {
+        "healthyRubyRedHue": [345, 15],
+        "healthyDeepBlueHue": [180, 260],
+        "moldMyceliumHue": [0, 360]
+      },
+      "geometry": {
+        "aspectRatioRange": [0.70, 1.45],
+        "morphology": "Conical / Heart-shaped with leafy green calyx"
+      },
+      "defectVulnerabilities": [
+        "Botrytis cinerea (Gray Mold)",
+        "Rhizopus stolonifer (Soft Rot)",
+        "Overripe leakiness",
+        "Mechanical compression"
+      ]
+    },
+    {
+      "category": "TROPICAL_FRUIT",
+      "species": ["Musa acuminata (Banana)", "Persea americana (Avocado)"],
+      "varieties": ["Cavendish", "Organic Hass"],
+      "spectralRanges": {
+        "bananaRipeHue": [45, 65],
+        "avocadoDarkSkinLuminance": [0.10, 0.38]
+      },
+      "geometry": {
+        "bananaAspectRatio": [1.35, 3.20],
+        "avocadoAspectRatio": [0.85, 1.40]
+      },
+      "defectVulnerabilities": [
+        "Crown rot",
+        "Anthracnose dark spots",
+        "Chilling injury browning",
+        "Peel abrasion"
+      ]
+    }
+  ]
+}

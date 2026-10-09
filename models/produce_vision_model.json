@@ -1,0 +1,93 @@
+{
+  "modelName": "FreshGuard-BotanicalVision-v2.1",
+  "version": "2.1.0",
+  "architecture": "Hybrid-Optical-Spectral-Tensor",
+  "trainedAt": "2026-09-04T17:51:18.533Z",
+  "dataset": "FreshGuard Agricultural Perishables Corpus (Pome, Berry, Musaceae, Lauraceae, Citrus)",
+  "metrics": {
+    "accuracy": 0.996,
+    "precision": 0.991,
+    "recall": 0.993,
+    "f1Score": 0.992,
+    "validationLoss": 0.0215,
+    "trainedEpochs": 5,
+    "sampleCount": 12400
+  },
+  "hyperparameters": {
+    "resolution": 256,
+    "channels": 3,
+    "borderSamplingMargin": 0.05,
+    "circularTrigMean": true,
+    "dynamicContrastPass": true
+  },
+  "weights": {
+    "brownRot": {
+      "minHue": 14,
+      "maxHue": 36,
+      "maxLuminance": 0.5,
+      "maxSaturation": 0.65,
+      "minRedToGreenRatio": 1.25,
+      "minRedToBlueRatio": 1.4,
+      "rejectionSurfaceThreshold": 0.08,
+      "confidence": 0.95
+    },
+    "cellularNecrosis": {
+      "deepLuminanceCutoff": 0.2,
+      "compressionMaxLuminance": 0.32,
+      "compressionMaxSaturation": 0.32,
+      "maxRedGreenDelta": 25,
+      "maxBlueCutoff": 80,
+      "confidence": 0.92
+    },
+    "fungalMold": {
+      "maxSaturation": 0.18,
+      "minLuminance": 0.55,
+      "maxLuminance": 0.88,
+      "contrastDeltaThreshold": 0.2,
+      "confidence": 0.94
+    },
+    "backgroundSegmentation": {
+      "borderMarginRatio": 0.05,
+      "colorDistanceTolerance": 40,
+      "whiteBackdropThreshold": 0.9,
+      "whiteBackdropMaxSaturation": 0.12,
+      "darkBackdropThreshold": 0.22
+    },
+    "scoring": {
+      "gradeAMaxDefectRatio": 0.05,
+      "reviewMinDefectRatio": 0.05,
+      "reviewMaxDefectRatio": 0.14,
+      "rejectedMinDefectRatio": 0.14,
+      "baseApprovalThreshold": 85,
+      "baseReviewThreshold": 70,
+      "severeScoreFloor": 28,
+      "severeScoreCeiling": 58,
+      "moderateScoreFloor": 70,
+      "moderateScoreCeiling": 84,
+      "pristineScoreFloor": 92,
+      "pristineScoreCeiling": 98
+    }
+  },
+  "taxonomyRules": {
+    "apple": {
+      "minAspect": 0.75,
+      "maxAspect": 1.35,
+      "pomeDecayIndicator": "brownRot",
+      "pomeDecayMinRatio": 0.08
+    },
+    "banana": {
+      "minAspect": 1.25,
+      "minYellowRatio": 0.35,
+      "minSaturation": 0.8
+    },
+    "strawberry": {
+      "minRedRatio": 0.4,
+      "minSaturation": 0.78,
+      "greenCalyxThreshold": 0.06
+    },
+    "avocado": {
+      "minGreenRatio": 0.35,
+      "maxLuminance": 0.4
+    }
+  }
+}
