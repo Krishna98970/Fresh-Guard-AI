@@ -1,0 +1,34 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://freshguard:freshguard@postgres:5432/freshguard
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./uploads:/app/uploads
+      - ./models:/app/models
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: freshguard
+      POSTGRES_USER: freshguard
+      POSTGRES_PASSWORD: freshguard
+    ports:
+      - "5432:5432"
+    volumes:
+      - freshguard-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U freshguard -d freshguard"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  freshguard-postgres:
