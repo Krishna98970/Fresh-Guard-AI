@@ -134,3 +134,9 @@ def downgrade() -> None:
     op.drop_table('users')
     op.drop_index('ix_warehouses_warehouse_id', table_name='warehouses')
     op.drop_table('warehouses')
+
+
+
+
+
+
