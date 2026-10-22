@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
+
 from core.database import get_db
 from dependencies.auth import get_current_user
 from models.inspection import Inspection
