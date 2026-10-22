@@ -20,3 +20,5 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
 }
 
 export function useAppState() { const context = useContext(StateContext); if (!context) throw new Error("useAppState must be used inside AppProviders"); return context; }
+
+
