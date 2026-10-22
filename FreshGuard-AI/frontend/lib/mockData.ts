@@ -23,3 +23,5 @@ export const notifications = [
   { title: "Batch requires review", detail: "TOM-1160 has visible bruising.", time: "24m ago" },
   { title: "Weekly report ready", detail: "Your warehouse summary is available.", time: "1h ago" },
 ];
+
+
