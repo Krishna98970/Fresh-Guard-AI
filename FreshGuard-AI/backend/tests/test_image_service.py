@@ -18,3 +18,4 @@ def test_valid_image_gets_safe_generated_name(tmp_path):
     assert path.parent == tmp_path
     assert path.name.startswith('inspection_')
     assert path.suffix == '.png'
+
