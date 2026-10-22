@@ -26,3 +26,6 @@ def decode_subject(token: str) -> str:
         return str(jwt.decode(token, settings.jwt_secret, algorithms=['HS256'])['sub'])
     except (JWTError, KeyError) as exc:
         raise ValueError('Invalid or expired token') from exc
+
+
+
