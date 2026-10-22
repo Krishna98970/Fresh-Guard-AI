@@ -59,3 +59,5 @@ def update_inventory(item_id: int, payload: InventoryCreate, db: Session = Depen
     db.commit()
     db.refresh(item)
     return serialize(item)
+
+
