@@ -42,4 +42,6 @@ export type User = {
   warehouseId: string;
 };
 
+
+
 export type AIResult = Omit<Inspection, "inspectionId" | "batch" | "employee" | "employeeId" | "warehouseId">;
