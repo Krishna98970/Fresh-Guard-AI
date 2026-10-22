@@ -6,3 +6,4 @@ from models.user import User
 from models.warehouse import Warehouse
 
 __all__ = ['Base', 'Inspection', 'InspectionItem', 'InventoryItem', 'Notification', 'User', 'Warehouse']
+
