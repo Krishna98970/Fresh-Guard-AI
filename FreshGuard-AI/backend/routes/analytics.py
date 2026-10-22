@@ -19,3 +19,4 @@ def dashboard(db: Session = Depends(get_db), user: User = Depends(get_current_us
     rejected = db.scalar(select(func.count()).select_from(base).where(base.c.decision == 'REJECT')) or 0
     average = db.scalar(select(func.avg(base.c.quality_score))) or 0
     return {'total_inspections': total, 'fresh_count': fresh, 'review_count': review, 'rejected_count': rejected, 'fresh_rate': round(fresh / total * 100, 1) if total else 0, 'reject_rate': round(rejected / total * 100, 1) if total else 0, 'average_quality_score': round(float(average), 1)}
+
