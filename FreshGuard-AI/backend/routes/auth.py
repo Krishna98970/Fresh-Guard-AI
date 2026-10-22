@@ -30,5 +30,7 @@ def me(user: User = Depends(get_current_user)):
     return serialize_user(user)
 
 
+
+
 def serialize_user(user: User) -> dict[str, object]:
     return {'employee_id': user.employee_id, 'name': user.name, 'warehouse_id': user.warehouse.warehouse_id, 'role': user.role}
