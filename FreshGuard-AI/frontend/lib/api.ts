@@ -17,3 +17,5 @@ export async function inspectImage(file: File, inspectionType: InspectionType): 
 export async function getInspectionHistory(): Promise<Inspection[]> { return inspections; }
 export async function getInventory(): Promise<InventoryItem[]> { return inventory; }
 export async function getAnalytics() { return { averageScore: 89.4, freshRate: 87.1, rejectRate: 5.2, totalInspected: 1248 }; }
+
+
