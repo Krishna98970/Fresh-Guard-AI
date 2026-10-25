@@ -5,7 +5,6 @@ import Link from 'next/link';
 import {
   ShieldAlert,
   RotateCcw,
-  Activity,
   History,
   CheckCircle2,
   Database,
@@ -15,18 +14,129 @@ import {
 } from 'lucide-react';
 import { store } from '@/lib/db/store';
 import { AuditLog } from '@/lib/types';
+import { useAuth } from '@/lib/auth/auth-context';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { formatDate } from '@/lib/utils';
 
+type DatabaseRecord = Record<string, unknown>;
+
+interface DatabaseTable {
+  name: string;
+  records: DatabaseRecord[];
+  note?: string;
+}
+
+function omitFields(record: object, fields: string[]): DatabaseRecord {
+  return Object.fromEntries(
+    Object.entries(record).filter(([field]) => !fields.includes(field))
+  );
+}
+
+function sanitizeDatabaseValue(value: unknown, fieldName = ''): unknown {
+  if (/password|secret|token|api.?key/i.test(fieldName)) {
+    return '[REDACTED]';
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => sanitizeDatabaseValue(item));
+  }
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, nestedValue]) => [
+        key,
+        sanitizeDatabaseValue(nestedValue, key),
+      ])
+    );
+  }
+  return value;
+}
+
+function buildDatabaseTables(): DatabaseTable[] {
+  const orders = store.getOrders();
+  const inspections = store.getInspections();
+  const deliveries = store.getDeliveries();
+
+  const records = (items: object[]) =>
+    items.map((item) => sanitizeDatabaseValue(item) as DatabaseRecord);
+
+  return [
+    { name: 'organizations', records: records([store.getOrganization()]) },
+    { name: 'users', records: records(store.getUsers()) },
+    { name: 'products', records: records(store.getProducts()) },
+    {
+      name: 'product_batches',
+      records: [],
+      note: 'Product batches are defined in the SQL schema but are not tracked in the current app store.',
+    },
+    {
+      name: 'orders',
+      records: records(orders.map((order) => omitFields(order, ['items']))),
+    },
+    {
+      name: 'order_items',
+      records: records(orders.flatMap((order) => order.items)),
+    },
+    {
+      name: 'quality_inspections',
+      records: records(
+        inspections.map((inspection) => omitFields(inspection, ['defects']))
+      ),
+    },
+    {
+      name: 'inspection_defects',
+      records: records(
+        inspections.flatMap((inspection) =>
+          inspection.defects.map((defect) => ({
+            ...defect,
+            inspection_id: inspection.id,
+          }))
+        )
+      ),
+    },
+    { name: 'packing_records', records: records(store.getPackingRecords()) },
+    { name: 'riders', records: records(store.getRiders()) },
+    {
+      name: 'deliveries',
+      records: records(
+        deliveries.map((delivery) =>
+          omitFields(delivery, ['currentTelemetry', 'recentEvents'])
+        )
+      ),
+    },
+    {
+      name: 'telemetry',
+      records: records(
+        deliveries.flatMap((delivery) =>
+          delivery.currentTelemetry ? [delivery.currentTelemetry] : []
+        )
+      ),
+    },
+    {
+      name: 'handling_events',
+      records: records(deliveries.flatMap((delivery) => delivery.recentEvents)),
+    },
+    { name: 'alerts', records: records(store.getAlerts()) },
+    { name: 'customer_feedback', records: records(store.getFeedback()) },
+    { name: 'system_settings', records: records([store.getSettings()]) },
+    { name: 'audit_logs', records: records(store.getAuditLogs()) },
+  ];
+}
+
 export default function AdminPage() {
+  const { role, isLoading } = useAuth();
   const [logs, setLogs] = useState<AuditLog[]>(() => store.getAuditLogs());
   const [searchQuery, setSearchQuery] = useState('');
+  const [databaseSearch, setDatabaseSearch] = useState('');
+  const [databaseTables, setDatabaseTables] = useState<DatabaseTable[]>(() =>
+    buildDatabaseTables()
+  );
+  const [selectedTable, setSelectedTable] = useState('quality_inspections');
   const [resetSuccess, setResetSuccess] = useState(false);
 
   const refresh = () => {
     setLogs(store.getAuditLogs());
+    setDatabaseTables(buildDatabaseTables());
   };
 
   const handleResetDatabase = () => {
@@ -44,6 +154,37 @@ export default function AdminPage() {
       l.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       l.entity.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const activeTable =
+    databaseTables.find((table) => table.name === selectedTable) ?? databaseTables[0];
+  const filteredDatabaseRecords = activeTable.records.filter((record) =>
+    JSON.stringify(record).toLowerCase().includes(databaseSearch.toLowerCase())
+  );
+  const totalDatabaseRecords = databaseTables.reduce(
+    (total, table) => total + table.records.length,
+    0
+  );
+
+  if (isLoading) {
+    return <div className="p-8 text-sm text-slate-400">Checking admin access…</div>;
+  }
+
+  if (role !== 'ADMIN') {
+    return (
+      <div className="min-h-screen bg-[#090d13] p-8 text-slate-100">
+        <Card className="mx-auto max-w-lg text-center">
+          <Lock className="mx-auto mb-3 h-8 w-8 text-rose-400" />
+          <h1 className="text-lg font-semibold text-white">Admin access required</h1>
+          <p className="mt-2 text-sm text-slate-400">
+            Switch to the Admin role to view organization records and system data.
+          </p>
+          <Link href="/dashboard/overview" className="mt-5 inline-block">
+            <Button variant="outline" size="sm">Back to Dashboard</Button>
+          </Link>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#090d13] text-slate-100 p-4 sm:p-6 lg:p-8 space-y-6">
@@ -108,6 +249,108 @@ export default function AdminPage() {
           <p className="text-[11px] text-slate-400 mt-1">Zero cross-tenant leakage</p>
         </Card>
       </div>
+
+      <Card className="space-y-4">
+        <CardHeader className="flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Database className="h-5 w-5 text-emerald-400" /> Database Explorer
+            </CardTitle>
+            <CardDescription>
+              Browse {databaseTables.length} data collections and {totalDatabaseRecords} available records.
+              Sensitive keys are redacted.
+            </CardDescription>
+            <p className="mt-1 text-[11px] text-amber-300">
+              Source: current FreshGuard app store. This view does not query live Supabase tables.
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={refresh}
+            icon={<RotateCcw className="h-3.5 w-3.5" />}
+          >
+            Refresh Data
+          </Button>
+        </CardHeader>
+
+        <div className="flex flex-wrap gap-2">
+          {databaseTables.map((table) => (
+            <button
+              key={table.name}
+              type="button"
+              onClick={() => setSelectedTable(table.name)}
+              className={`rounded-lg border px-3 py-2 text-left text-xs transition-colors ${
+                activeTable.name === table.name
+                  ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-300'
+                  : 'border-slate-700 bg-slate-900/70 text-slate-400 hover:text-white'
+              }`}
+            >
+              <span className="font-mono">{table.name}</span>
+              <span className="ml-2 text-[10px] opacity-70">{table.records.length}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="flex flex-col gap-3 border-t border-slate-800 pt-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="font-mono text-sm font-semibold text-white">{activeTable.name}</h2>
+            <p className="text-[11px] text-slate-400">
+              Showing {filteredDatabaseRecords.length} of {activeTable.records.length} records
+            </p>
+          </div>
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-500" />
+            <input
+              type="search"
+              value={databaseSearch}
+              onChange={(event) => setDatabaseSearch(event.target.value)}
+              placeholder={`Search ${activeTable.name}...`}
+              aria-label={`Search ${activeTable.name}`}
+              className="w-full rounded-xl border border-slate-800 bg-slate-900 py-2 pl-9 pr-3 text-xs text-white placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none"
+            />
+          </div>
+        </div>
+
+        {activeTable.note && (
+          <p className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 text-xs text-amber-200">
+            {activeTable.note}
+          </p>
+        )}
+
+        <div className="max-h-[34rem] space-y-2 overflow-auto">
+          {filteredDatabaseRecords.map((record, index) => {
+            const identityField = Object.keys(record).find((key) =>
+              ['id', 'inspectionId', 'orderNumber', 'email', 'name'].includes(key)
+            );
+            return (
+              <details
+                key={String(identityField ? record[identityField] : index)}
+                className="group rounded-xl border border-slate-800 bg-slate-950/60"
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3 text-xs hover:bg-slate-900/70">
+                  <span className="min-w-0 truncate font-mono text-slate-200">
+                    {identityField ? `${identityField}: ${String(record[identityField])}` : `Record ${index + 1}`}
+                  </span>
+                  <span className="shrink-0 text-[10px] text-emerald-400 group-open:text-slate-400">
+                    View full record
+                  </span>
+                </summary>
+                <pre className="overflow-x-auto border-t border-slate-800 p-4 text-[11px] leading-relaxed text-slate-300">
+                  {JSON.stringify(record, null, 2)}
+                </pre>
+              </details>
+            );
+          })}
+          {filteredDatabaseRecords.length === 0 && (
+            <div className="rounded-xl border border-dashed border-slate-700 p-8 text-center text-xs text-slate-400">
+              {activeTable.records.length === 0
+                ? 'No records are available in this collection.'
+                : 'No records match your search.'}
+            </div>
+          )}
+        </div>
+      </Card>
 
       {/* Audit Log Table */}
       <Card className="space-y-4">

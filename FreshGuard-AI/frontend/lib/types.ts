@@ -1,6 +1,6 @@
 export type Status = "Fresh" | "Needs Review" | "Rejected";
 export type Decision = "ACCEPT" | "REVIEW" | "REJECT";
-export type InspectionType = "Single Produce" | "Box / Batch";
+export type InspectionType = "Single Produce" | "Cardboard";
 
 export type Inspection = {
   inspectionId: string;
@@ -16,6 +16,7 @@ export type Inspection = {
   grade: string;
   decision: Decision;
   defects: string[];
+  detections?: { label: string; confidence: number; x: number; y: number; width: number; height: number }[];
   imageUrl?: string;
   timestamp: string;
   inspectionType: InspectionType;
@@ -42,6 +43,10 @@ export type User = {
   warehouseId: string;
 };
 
+<<<<<<< HEAD
 
 
 export type AIResult = Omit<Inspection, "inspectionId" | "batch" | "employee" | "employeeId" | "warehouseId">;
+=======
+export type AIResult = Omit<Inspection, "inspectionId" | "batch" | "employee" | "employeeId" | "warehouseId"> & { inspectionId?: string };
+>>>>>>> f1596003 (Update FreshGuard AI)

@@ -1,11 +1,13 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from pymongo.database import Database
 
-from core.config import settings
+from core.database import get_db
 from services.model_manager import model_manager
 
 router = APIRouter(prefix='/api/health', tags=['Health'])
 
 
 @router.get('')
-def health() -> dict[str, object]:
-    return {'status': 'healthy', 'database': 'configured', 'mock_ai': settings.mock_ai, **model_manager.status}
+def health(db: Database[dict[str, object]] = Depends(get_db)) -> dict[str, object]:
+    db.command('ping')
+    return {'status': 'healthy', 'database': 'connected', **model_manager.status}
