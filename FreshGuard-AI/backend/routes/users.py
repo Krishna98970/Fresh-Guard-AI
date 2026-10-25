@@ -1,11 +1,12 @@
+from datetime import datetime, timezone
+from typing import Optional
+
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from typing import Optional
-from sqlalchemy.orm import Session
+from pymongo.database import Database
 
 from core.database import get_db
 from dependencies.auth import get_current_user
-from models.user import User
 
 router = APIRouter(prefix='/api/users', tags=['Users'])
 
@@ -16,14 +17,31 @@ class ProfileUpdate(BaseModel):
 
 
 @router.get('/me')
-def get_profile(user: User = Depends(get_current_user)):
-    return {'employee_id': user.employee_id, 'name': user.name, 'email': user.email, 'warehouse_id': user.warehouse.warehouse_id, 'role': user.role}
+def get_profile(user: dict[str, object] = Depends(get_current_user)):
+    warehouse = user['warehouse']
+    if not isinstance(warehouse, dict):
+        raise RuntimeError('User warehouse data is invalid')
+    return {
+        'employee_id': user['employee_id'],
+        'name': user['name'],
+        'email': user.get('email'),
+        'warehouse_id': warehouse['warehouse_id'],
+        'role': user['role'],
+    }
 
 
 @router.patch('/me')
-def update_profile(payload: ProfileUpdate, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    user.name = payload.name
-    user.email = payload.email
-    db.commit()
-    db.refresh(user)
-    return get_profile(user)
+def update_profile(
+    payload: ProfileUpdate,
+    user: dict[str, object] = Depends(get_current_user),
+    db: Database[dict[str, object]] = Depends(get_db),
+):
+    db.users.update_one(
+        {'employee_id': user['employee_id']},
+        {'$set': {'name': payload.name, 'email': payload.email, 'updated_at': datetime.now(timezone.utc)}},
+    )
+    updated_user = db.users.find_one({'employee_id': user['employee_id']})
+    if updated_user is None:
+        raise RuntimeError('Updated user record could not be loaded')
+    updated_user['warehouse'] = user['warehouse']
+    return get_profile(updated_user)

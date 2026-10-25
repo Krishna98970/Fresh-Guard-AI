@@ -6,31 +6,36 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: postgresql+psycopg://freshguard:freshguard@postgres:5432/freshguard
+      FRONTEND_URL: http://localhost:3001
+      PRODUCE_MODEL_PATH: /krishna/cnn_model.pt
+      CARDBOARD_MODEL_PATH: /krishna/cardboard_best_model.pt
+      MONGODB_URI: mongodb://mongo:27017/freshguard
     depends_on:
-      postgres:
+      mongo:
         condition: service_healthy
     volumes:
       - ./uploads:/app/uploads
-      - ./models:/app/models
+      - ../../krishna:/krishna:ro
 
-  postgres:
-    image: postgres:16-alpine
+  mongo:
+    image: mongo:7
     environment:
-      POSTGRES_DB: freshguard
-      POSTGRES_USER: freshguard
-      POSTGRES_PASSWORD: freshguard
+      MONGO_INITDB_DATABASE: freshguard
     ports:
-      - "5432:5432"
+      - "27017:27017"
     volumes:
-      - freshguard-postgres:/var/lib/postgresql/data
+      - freshguard-mongo:/data/db
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U freshguard -d freshguard"]
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
       interval: 5s
       timeout: 5s
       retries: 10
 
 volumes:
+<<<<<<< HEAD
   freshguard-postgres:
 
 
+=======
+  freshguard-mongo:
+>>>>>>> f1596003 (Update FreshGuard AI)
