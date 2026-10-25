@@ -1,21 +1,42 @@
-from sqlalchemy import select
+from datetime import datetime, timezone
 
-from core.database import SessionLocal
+from core.database import database, ensure_indexes
 from core.security import hash_password
-from models import User, Warehouse
 
 
 def seed() -> None:
-    with SessionLocal() as db:
-        warehouse = db.scalar(select(Warehouse).where(Warehouse.warehouse_id == 'WH-MTH-001'))
-        if warehouse is None:
-            warehouse = Warehouse(warehouse_id='WH-MTH-001', name='FreshGuard Mathura Warehouse', location='Mathura, Uttar Pradesh')
-            db.add(warehouse)
-            db.flush()
-        user = db.scalar(select(User).where(User.employee_id == 'EMP-1001'))
-        if user is None:
-            db.add(User(employee_id='EMP-1001', warehouse_id=warehouse.id, name='Krishna Mishra', email='krishna@freshguard.ai', password_hash=hash_password('demo123'), role='WAREHOUSE_EMPLOYEE'))
-        db.commit()
+    ensure_indexes(database)
+    now = datetime.now(timezone.utc)
+    database.warehouses.update_one(
+        {'warehouse_id': 'WH-MTH-001'},
+        {
+            '$setOnInsert': {
+                'warehouse_id': 'WH-MTH-001',
+                'name': 'FreshGuard Mathura Warehouse',
+                'location': 'Mathura, Uttar Pradesh',
+                'is_active': True,
+                'created_at': now,
+            },
+        },
+        upsert=True,
+    )
+    database.users.update_one(
+        {'employee_id': 'EMP-1001'},
+        {
+            '$setOnInsert': {
+                'employee_id': 'EMP-1001',
+                'warehouse_id': 'WH-MTH-001',
+                'name': 'Krishna Mishra',
+                'email': 'krishna@freshguard.ai',
+                'password_hash': hash_password('demo123'),
+                'role': 'WAREHOUSE_EMPLOYEE',
+                'is_active': True,
+                'created_at': now,
+                'updated_at': now,
+            },
+        },
+        upsert=True,
+    )
 
 
 if __name__ == '__main__':
