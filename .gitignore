@@ -31,3 +31,4 @@ node_modules/
 # Large trained model files
 krishna/cardboard_best_model.pt
 krishna/cnn_model.pt
+*.pt
