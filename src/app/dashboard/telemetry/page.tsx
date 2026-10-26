@@ -39,6 +39,7 @@ import {
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { formatDateInUtc } from '@/lib/utils';
 
 function TelemetryContent() {
   const searchParams = useSearchParams();
@@ -67,7 +68,7 @@ function TelemetryContent() {
   // Initialize initial points
   useEffect(() => {
     const initialPoints = Array.from({ length: 12 }, (_, i) => {
-      const time = new Date(Date.now() - (12 - i) * 3000).toLocaleTimeString([], {
+      const time = formatDateInUtc(new Date(Date.now() - (12 - i) * 3000), {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
@@ -90,7 +91,7 @@ function TelemetryContent() {
     const interval = setInterval(() => {
       setPhysicsState((prev) => {
         const { nextState, reading, event } = tickPhysics(prev);
-        const timeLabel = new Date().toLocaleTimeString([], {
+        const timeLabel = formatDateInUtc(new Date(), {
           hour: '2-digit',
           minute: '2-digit',
           second: '2-digit',
@@ -122,7 +123,7 @@ function TelemetryContent() {
   const handleTriggerAnomaly = (type: HandlingEventType) => {
     setPhysicsState((prev) => {
       const { nextState, reading, event } = tickPhysics(prev, type);
-      const timeLabel = new Date().toLocaleTimeString([], {
+      const timeLabel = formatDateInUtc(new Date(), {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
@@ -581,7 +582,11 @@ function TelemetryContent() {
                     <p className="text-slate-400 mt-1">{evt.description}</p>
                   </div>
                   <span className="font-mono text-[10px] text-slate-500 whitespace-nowrap">
-                    {new Date(evt.timestamp).toLocaleTimeString()}
+                    {formatDateInUtc(new Date(evt.timestamp), {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      second: '2-digit',
+                    })}
                   </span>
                 </div>
               ))

@@ -17,6 +17,7 @@ import {
 import { store } from '@/lib/db/store';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { formatDateInUtc } from '@/lib/utils';
 
 export function DemoController() {
   const router = useRouter();
@@ -49,7 +50,7 @@ export function DemoController() {
   ];
 
   const log = (msg: string) => {
-    setLogMessages((prev) => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev.slice(0, 15)]);
+    setLogMessages((prev) => [`[${formatDateInUtc(new Date(), { hour: '2-digit', minute: '2-digit', second: '2-digit' })}] ${msg}`, ...prev.slice(0, 15)]);
   };
 
   const executeStep = async (stepIndex: number) => {

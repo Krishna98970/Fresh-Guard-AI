@@ -12,18 +12,28 @@ export function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
-export function formatDate(dateString: string): string {
+export function formatDateInUtc(
+  dateInput: string | Date,
+  options: Intl.DateTimeFormatOptions = {}
+): string {
   try {
-    const date = new Date(dateString);
+    const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
     return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+      timeZone: 'UTC',
+      ...options,
     }).format(date);
   } catch {
-    return dateString;
+    return typeof dateInput === 'string' ? dateInput : dateInput.toISOString();
   }
+}
+
+export function formatDate(dateString: string): string {
+  return formatDateInUtc(dateString, {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }
 
 export function formatRelativeTime(dateString: string): string {
