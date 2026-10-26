@@ -15,6 +15,7 @@ import { store } from '@/lib/db/store';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { formatDateInUtc } from '@/lib/utils';
 
 type ReportType =
   | 'QUALITY'
@@ -210,7 +211,7 @@ export default function ReportsPage() {
               FreshGuard AI Certified {reportType} Audit
             </h3>
             <p className="text-[11px] text-slate-400 font-mono">
-              Generated: {new Date().toLocaleString()} • Range: {dateRange}
+              Generated: {formatDateInUtc(new Date(), { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })} • Range: {dateRange}
             </p>
           </div>
           <Badge variant="emerald" dot>
