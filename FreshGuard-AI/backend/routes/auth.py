@@ -35,12 +35,6 @@ def me(user: dict[str, object] = Depends(get_current_user)):
     return serialize_user(user)
 
 
-<<<<<<< HEAD
-
-
-def serialize_user(user: User) -> dict[str, object]:
-    return {'employee_id': user.employee_id, 'name': user.name, 'warehouse_id': user.warehouse.warehouse_id, 'role': user.role}
-=======
 def serialize_user(user: dict[str, object]) -> dict[str, object]:
     warehouse = user['warehouse']
     if not isinstance(warehouse, dict):
@@ -51,4 +45,3 @@ def serialize_user(user: dict[str, object]) -> dict[str, object]:
         'warehouse_id': warehouse['warehouse_id'],
         'role': user['role'],
     }
->>>>>>> f1596003 (Update FreshGuard AI)

@@ -29,6 +29,5 @@ node_modules/
 /fresh_stale_classifier.h5
 
 # Large trained model files
-krishna/cardboard_best_model.pt
 krishna/cnn_model.pt
 *.pt

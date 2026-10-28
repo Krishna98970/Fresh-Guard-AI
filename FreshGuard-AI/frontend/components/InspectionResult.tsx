@@ -10,9 +10,11 @@ export default function InspectionResult({ result, preview, onNew }: { result: A
   const isCardboard = result.inspectionType === "Cardboard";
   const decisionCopy = isCardboard
     ? "The detector output is saved. Review the detected classes before making a quality decision."
-    : result.decision === "ACCEPT"
-      ? "The classifier identified this fruit as fresh."
-      : "The classifier identified this fruit as rotten.";
+    : result.decision === "REVIEW"
+      ? `The classifier predicted ${result.condition.toLowerCase()}, but this result requires manual review.`
+      : result.decision === "ACCEPT"
+        ? "The classifier identified this fruit as fresh."
+        : "The classifier identified this fruit as rotten.";
 
   return (
     <div className="result-flow">
@@ -61,7 +63,7 @@ export default function InspectionResult({ result, preview, onNew }: { result: A
           {result.detections?.length ? (
             <div className="table-wrap">
               <table>
-                <thead><tr><th>Class ID</th><th>Confidence</th><th>Box (x, y, width, height)</th></tr></thead>
+                <thead><tr><th>Object</th><th>Confidence</th><th>Box (x, y, width, height)</th></tr></thead>
                 <tbody>{result.detections.map((detection, index) => (
                   <tr key={`${detection.label}-${index}`}>
                     <td>{detection.label}</td>
@@ -71,7 +73,7 @@ export default function InspectionResult({ result, preview, onNew }: { result: A
                 ))}</tbody>
               </table>
             </div>
-          ) : <p className="defect-item">The detector returned no objects for this image.</p>}
+          ) : <p className="defect-item">{result.details ?? "No confident cardboard detections were returned."}</p>}
         </section>
       )}
       <div className="defects-grid">
@@ -79,7 +81,9 @@ export default function InspectionResult({ result, preview, onNew }: { result: A
           <div className="panel-heading"><div><p className="eyebrow">Model output</p><h2>{isCardboard ? "Detected classes" : "Predicted condition"}</h2></div></div>
           {result.defects.length
             ? result.defects.map((defect) => <p className="defect-item warning" key={defect}><AlertTriangle size={17} />{defect}</p>)
-            : <p className="defect-item good"><Check size={17} />The classifier predicted fresh {result.product.toLowerCase()}.</p>}
+            : isCardboard
+              ? <p className="defect-item">No objects cleared the confidence threshold.</p>
+              : <p className="defect-item good"><Check size={17} />The classifier predicted fresh {result.product.toLowerCase()}.</p>}
         </div>
         <div className="panel result-actions">
           <h2>Inspection saved</h2>

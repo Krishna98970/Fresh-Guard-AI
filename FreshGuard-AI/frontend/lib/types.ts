@@ -16,6 +16,7 @@ export type Inspection = {
   grade: string;
   decision: Decision;
   defects: string[];
+  details?: string | null;
   detections?: { label: string; confidence: number; x: number; y: number; width: number; height: number }[];
   imageUrl?: string;
   timestamp: string;
@@ -43,10 +44,4 @@ export type User = {
   warehouseId: string;
 };
 
-<<<<<<< HEAD
-
-
-export type AIResult = Omit<Inspection, "inspectionId" | "batch" | "employee" | "employeeId" | "warehouseId">;
-=======
 export type AIResult = Omit<Inspection, "inspectionId" | "batch" | "employee" | "employeeId" | "warehouseId"> & { inspectionId?: string };
->>>>>>> f1596003 (Update FreshGuard AI)

@@ -1,6 +1,6 @@
 # FreshGuard AI Backend
 
-FastAPI backend for authenticated, warehouse-scoped image inspections. It loads the provided produce CNN and cardboard Faster R-CNN checkpoints at startup and does not fall back to mock predictions.
+FastAPI backend for authenticated, warehouse-scoped image inspections. It loads the produce CNN and YOLO cardboard detector at startup and does not fall back to mock predictions.
 
 ## Local setup
 
@@ -16,6 +16,7 @@ uvicorn app:app --reload --port 8000
 ```
 
 The backend loads `.env` from its own directory when settings are initialized. Values already set in the shell take precedence. `MONGODB_URI` defaults to `mongodb://localhost:27017/freshguard`; set `MONGODB_DATABASE` to override the database name.
+The frontend runs on `http://localhost:3000` by default, which is the configured CORS origin. Set `FRONTEND_URL` if it runs elsewhere. Set `PRODUCE_MODEL_PATH` and `CARDBOARD_MODEL_PATH` to the actual checkpoint files before starting the API; the example values assume a `krishna/` model directory at the repository root.
 
 Open `http://localhost:8000/docs` for the API documentation.
 
@@ -34,8 +35,8 @@ docker compose exec api python -m scripts.seed
 ## Inspection models
 
 - `../../krishna/cnn_model.pt` is a six-class fruit freshness classifier: fresh/rotten apples, bananas, and oranges. This checkpoint does not classify vegetables.
-- `../../krishna/cardboard_best_model.pt` is a serialized torchvision Faster R-CNN detector. Its checkpoint contains no category-name mapping, so detections are returned with numeric class IDs and bounding boxes. The detector does not grade cardboard quality. Because this file serializes a complete Python model, load only a checkpoint from a trusted source.
-- Both models run on CPU. Startup fails explicitly if either checkpoint is missing or invalid; predictions are never replaced with mock output.
+- `../../krishna/yolov8n.pt` is loaded using Ultralytics YOLO for cardboard detection. The supplied checkpoint is the general COCO `yolov8n.pt` model and does not have a cardboard class, so it cannot produce valid cardboard detections as-is. The API reports that limitation instead of relabeling unrelated COCO objects as cardboard. Fine-tune the checkpoint with a labeled cardboard dataset and use a class named `cardboard`, `cardboard box`, `cardboard carton`, `carton`, or `corrugated box` to enable that path.
+- The fruit classifier and cardboard detector run on CPU. Startup fails explicitly if either checkpoint is missing or invalid; predictions are never replaced with mock output. YOLO model files are trusted Python checkpoints; only load model files from a trusted source.
 - Set `PRODUCE_MODEL_PATH` and `CARDBOARD_MODEL_PATH` in `.env` to override the paths. `docker-compose.yml` supplies the container paths and mounts the model directory.
 - Fruit decisions use the classifier's predicted class and confidence; `ACCEPT_THRESHOLD` and `REVIEW_THRESHOLD` control when low-confidence predictions are sent for manual review. Cardboard detections always require manual quality review.
 
@@ -54,5 +55,3 @@ The API requires a valid MongoDB connection and seeded user before login or savi
 - `GET /api/reports/export`
 - `GET /api/notifications`
 - `GET /api/health`
-
-

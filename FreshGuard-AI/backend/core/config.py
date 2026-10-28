@@ -23,14 +23,12 @@ class Settings:
     mongodb_database: str = _mongo_database_name()
     jwt_secret: str = os.getenv('JWT_SECRET', 'change-this-development-secret')
     max_upload_size_mb: int = int(os.getenv('MAX_UPLOAD_SIZE_MB', '10'))
-    frontend_url: str = os.getenv('FRONTEND_URL', 'http://localhost:3001')
+    frontend_url: str = os.getenv('FRONTEND_URL', 'http://localhost:3000')
     produce_model_path: str = os.getenv('PRODUCE_MODEL_PATH', '../../krishna/cnn_model.pt')
-    cardboard_model_path: str = os.getenv('CARDBOARD_MODEL_PATH', '../../krishna/cardboard_best_model.pt')
+    cardboard_model_path: str = os.getenv('CARDBOARD_MODEL_PATH', '../../krishna/yolov8n.pt')
     accept_threshold: float = float(os.getenv('ACCEPT_THRESHOLD', '0.85'))
     review_threshold: float = float(os.getenv('REVIEW_THRESHOLD', '0.60'))
 
 
 settings = Settings()
-
-
 

@@ -13,18 +13,6 @@ client: MongoClient[dict[str, object]] = MongoClient(
 database: Database[dict[str, object]] = client[settings.mongodb_database]
 
 
-<<<<<<< HEAD
-def get_db() -> Generator[Session, None, None]:
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-
-
-=======
 def get_db() -> Generator[Database[dict[str, object]], None, None]:
     yield database
 
@@ -42,4 +30,3 @@ def ensure_indexes(db: Database[dict[str, object]] = database) -> None:
     db.inventory.create_index([('batch_id', ASCENDING)], unique=True)
     db.inventory.create_index([('warehouse_id', ASCENDING), ('received_at', DESCENDING)])
     db.notifications.create_index([('user_id', ASCENDING), ('created_at', DESCENDING)])
->>>>>>> f1596003 (Update FreshGuard AI)

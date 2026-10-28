@@ -6,9 +6,9 @@ services:
     env_file:
       - .env
     environment:
-      FRONTEND_URL: http://localhost:3001
+      FRONTEND_URL: http://localhost:3000
       PRODUCE_MODEL_PATH: /krishna/cnn_model.pt
-      CARDBOARD_MODEL_PATH: /krishna/cardboard_best_model.pt
+      CARDBOARD_MODEL_PATH: /krishna/yolov8n.pt
       MONGODB_URI: mongodb://mongo:27017/freshguard
     depends_on:
       mongo:
@@ -32,10 +32,4 @@ services:
       retries: 10
 
 volumes:
-<<<<<<< HEAD
-  freshguard-postgres:
-
-
-=======
   freshguard-mongo:
->>>>>>> f1596003 (Update FreshGuard AI)

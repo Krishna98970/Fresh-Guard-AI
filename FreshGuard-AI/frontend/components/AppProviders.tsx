@@ -104,14 +104,8 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
   );
 }
 
-<<<<<<< HEAD
-export function useAppState() { const context = useContext(StateContext); if (!context) throw new Error("useAppState must be used inside AppProviders"); return context; }
-
-
-=======
 export function useAppState() {
   const context = useContext(StateContext);
   if (!context) throw new Error("useAppState must be used inside AppProviders");
   return context;
 }
->>>>>>> f1596003 (Update FreshGuard AI)

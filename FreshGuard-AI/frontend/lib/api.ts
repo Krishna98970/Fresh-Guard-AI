@@ -3,6 +3,17 @@ import type { AIResult, Inspection, InspectionType, InventoryItem, User } from "
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
+async function fetchApi(url: string, init?: RequestInit): Promise<Response> {
+  try {
+    return await fetch(url, init);
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error(`Cannot reach the FreshGuard API at ${API_URL}. Start the backend and check that it is listening.`);
+    }
+    throw error;
+  }
+}
+
 type BackendInspection = {
   inspection_id: string;
   inspection_type: "single" | "box";
@@ -27,13 +38,6 @@ function authHeaders(): Record<string, string> {
   return { Authorization: `Bearer ${token}` };
 }
 
-<<<<<<< HEAD
-export async function getInspectionHistory(): Promise<Inspection[]> { return inspections; }
-export async function getInventory(): Promise<InventoryItem[]> { return inventory; }
-export async function getAnalytics() { return { averageScore: 89.4, freshRate: 87.1, rejectRate: 5.2, totalInspected: 1248 }; }
-
-
-=======
 async function errorMessage(response: Response): Promise<string> {
   const responseText = await response.text();
   let body: unknown;
@@ -73,6 +77,7 @@ function mapInspection(record: BackendInspection): Inspection {
     grade: record.grade,
     decision: record.decision,
     defects: record.defects,
+    details: record.details,
     detections: record.detections,
     timestamp: new Date(record.timestamp).toLocaleString(),
     inspectionType: record.inspection_type === "box" ? "Cardboard" : "Single Produce",
@@ -80,7 +85,7 @@ function mapInspection(record: BackendInspection): Inspection {
 }
 
 export async function loginToBackend(warehouseId: string, employeeId: string, password: string) {
-  const response = await fetch(`${API_URL}/api/auth/login`, {
+  const response = await fetchApi(`${API_URL}/api/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ warehouse_id: warehouseId, employee_id: employeeId, password }),
@@ -104,7 +109,7 @@ export async function inspectImage(file: File, inspectionType: InspectionType): 
   const formData = new FormData();
   formData.append("image", file);
   formData.append("inspection_type", inspectionType === "Cardboard" ? "box" : "single");
-  const response = await fetch(`${API_URL}/api/inspections`, {
+  const response = await fetchApi(`${API_URL}/api/inspections`, {
     method: "POST",
     body: formData,
     headers: authHeaders(),
@@ -119,7 +124,7 @@ export async function getInspectionHistory(): Promise<Inspection[]> {
   let page = 1;
   let total = 0;
   do {
-    const response = await fetch(`${API_URL}/api/inspections?page=${page}&limit=100`, {
+    const response = await fetchApi(`${API_URL}/api/inspections?page=${page}&limit=100`, {
       headers: authHeaders(),
       cache: "no-store",
     });
@@ -135,4 +140,3 @@ export async function getInspectionHistory(): Promise<Inspection[]> {
 export async function getInventory(): Promise<InventoryItem[]> {
   return inventory;
 }
->>>>>>> f1596003 (Update FreshGuard AI)

@@ -1,6 +1,6 @@
 # FreshGuard AI
 
-FreshGuard AI is a two-part produce inspection prototype. The Next.js frontend accepts an image and presents an inspection result; the Flask backend exposes the `/api/inspect` endpoint where the trained models can be connected.
+FreshGuard AI is a two-part produce inspection prototype. The Next.js frontend accepts an image and presents an inspection result; the FastAPI backend exposes authenticated inspection endpoints and uses MongoDB for inspection records.
 
 ## Run locally
 
@@ -20,4 +20,4 @@ pip install -r requirements.txt
 python app.py
 ```
 
-Open `http://localhost:3000`. The checked-in `.keras` files are placeholders for trained artifacts generated from the notebooks.
+Open `http://localhost:3000`. The backend uses a fruit-classifier checkpoint and a YOLO checkpoint configured through its environment variables. The supplied `yolov8n.pt` is a general COCO model, not a cardboard-trained model; fine-tune it on labeled cardboard images before expecting cardboard detections.

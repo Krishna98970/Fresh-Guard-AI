@@ -146,8 +146,3 @@ export default function InspectionFlow() {
     </div>
   );
 }
-<<<<<<< HEAD
-function ShieldMark() { return <span className="mini-shield">✓</span>; }
-
-=======
->>>>>>> f1596003 (Update FreshGuard AI)
