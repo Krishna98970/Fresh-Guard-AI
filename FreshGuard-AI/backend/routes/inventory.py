@@ -8,6 +8,7 @@ from pymongo.database import Database
 
 from core.database import get_db
 from dependencies.auth import get_current_user
+from routes.workflow import _require_role
 
 router = APIRouter(prefix='/api/inventory', tags=['Inventory'])
 
@@ -43,6 +44,7 @@ def list_inventory(
     db: Database[dict[str, object]] = Depends(get_db),
     user: dict[str, object] = Depends(get_current_user),
 ):
+    _require_role(user, 'ADMIN', 'WAREHOUSE_EMPLOYEE')
     items = db.inventory.find({'warehouse_id': user['warehouse_id']}).sort('received_at', -1)
     return {'data': [serialize(item) for item in items]}
 
@@ -53,6 +55,7 @@ def create_inventory(
     db: Database[dict[str, object]] = Depends(get_db),
     user: dict[str, object] = Depends(get_current_user),
 ):
+    _require_role(user, 'ADMIN', 'WAREHOUSE_EMPLOYEE')
     item = {
         '_id': str(uuid4()),
         'warehouse_id': user['warehouse_id'],
@@ -69,6 +72,7 @@ def get_inventory(
     db: Database[dict[str, object]] = Depends(get_db),
     user: dict[str, object] = Depends(get_current_user),
 ):
+    _require_role(user, 'ADMIN', 'WAREHOUSE_EMPLOYEE')
     item = db.inventory.find_one({'_id': item_id, 'warehouse_id': user['warehouse_id']})
     if item is None:
         raise HTTPException(status_code=404, detail='Inventory item not found')
@@ -82,6 +86,7 @@ def update_inventory(
     db: Database[dict[str, object]] = Depends(get_db),
     user: dict[str, object] = Depends(get_current_user),
 ):
+    _require_role(user, 'ADMIN', 'WAREHOUSE_EMPLOYEE')
     item = db.inventory.find_one({'_id': item_id, 'warehouse_id': user['warehouse_id']})
     if item is None:
         raise HTTPException(status_code=404, detail='Inventory item not found')
@@ -91,5 +96,4 @@ def update_inventory(
     )
     item.update(payload.model_dump())
     return serialize(item)
-
 

@@ -1,14 +1,24 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Search } from 'lucide-react';
 import { FreshGuardShell } from '@/components/freshguard-shell';
 import { getInspectionHistory } from '@/lib/api';
 import { formatDateInUtc } from '@/lib/utils';
-
-const records = await getInspectionHistory();
+import type { InspectionResult } from '@/lib/mockAI';
 
 export default function HistoryPage() {
   const [query, setQuery] = useState('');
+  const [records, setRecords] = useState<InspectionResult[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  useEffect(() => {
+    let active = true;
+    getInspectionHistory()
+      .then((items) => { if (active) setRecords(items); })
+      .catch((cause: unknown) => { if (active) setError(cause instanceof Error ? cause.message : 'Inspection history could not be loaded.'); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
   const filtered = records.filter((r) =>
     `${r.inspectionId} ${r.product} ${r.employeeId} ${r.condition}`
       .toLowerCase()
@@ -57,7 +67,9 @@ export default function HistoryPage() {
               ))}
             </tbody>
           </table>
-          {!filtered.length && <p className="p-10 text-center text-sm text-slate-500">No inspections yet. Start your first produce inspection.</p>}
+          {!loading && !error && !filtered.length && <p className="p-10 text-center text-sm text-slate-500">No inspections yet. Start your first produce inspection.</p>}
+          {loading && <p className="p-10 text-center text-sm text-slate-500">Loading inspection history…</p>}
+          {error && <p role="alert" className="p-4 text-sm font-semibold text-rose-700">{error}</p>}
         </div>
       </div>
     </FreshGuardShell>

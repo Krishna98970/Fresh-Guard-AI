@@ -8,6 +8,7 @@ from pymongo.database import Database
 
 from core.database import get_db
 from dependencies.auth import get_current_user
+from routes.workflow import _require_role
 
 router = APIRouter(prefix='/api/reports', tags=['Reports'])
 
@@ -17,6 +18,7 @@ def summary(
     db: Database[dict[str, object]] = Depends(get_db),
     user: dict[str, object] = Depends(get_current_user),
 ):
+    _require_role(user, 'ADMIN', 'WAREHOUSE_EMPLOYEE', 'QUALITY_MANAGER')
     result = next(
         db.inspections.aggregate([
             {'$match': {'warehouse_id': user['warehouse_id']}},
@@ -47,6 +49,7 @@ def export_csv(
     db: Database[dict[str, object]] = Depends(get_db),
     user: dict[str, object] = Depends(get_current_user),
 ):
+    _require_role(user, 'ADMIN', 'WAREHOUSE_EMPLOYEE', 'QUALITY_MANAGER')
     rows = db.inspections.find({'warehouse_id': user['warehouse_id']}).sort('created_at', -1)
     output = StringIO()
     writer = csv.writer(output)

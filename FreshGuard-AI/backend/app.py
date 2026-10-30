@@ -16,6 +16,7 @@ from routes.reports import router as reports_router
 from routes.users import router as users_router
 from routes.warehouse import router as warehouse_router
 from routes.health import router as health_router
+from routes.workflow import router as workflow_router
 from services.model_manager import model_manager
 
 app = FastAPI(title='FreshGuard AI API', version='1.0.0')
@@ -30,6 +31,7 @@ app.include_router(reports_router)
 app.include_router(users_router)
 app.include_router(warehouse_router)
 app.include_router(health_router)
+app.include_router(workflow_router)
 
 
 @app.exception_handler(DuplicateKeyError)

@@ -1,4 +1,109 @@
 'use client';
-import { useState } from 'react'; import { Search, Plus, Package } from 'lucide-react'; import { FreshGuardShell } from '@/components/freshguard-shell'; import { getInventory } from '@/lib/api';
-const rows = await getInventory();
-export default function InventoryPage() { const [query, setQuery] = useState(''); const filtered = rows.filter((row) => row.join(' ').toLowerCase().includes(query.toLowerCase())); return <FreshGuardShell><div className="space-y-7"><div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p className="mb-2 text-sm font-semibold text-emerald-700">Warehouse stock</p><h1 className="text-3xl font-bold">Inventory</h1><p className="mt-2 text-slate-500">Track produce batches and their latest visual quality status.</p></div><button className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white"><Plus size={17} />Add batch</button></div><div className="relative max-w-md"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search produce or batch..." className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm outline-none focus:border-emerald-500" /></div><div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white"><table className="w-full min-w-[760px] text-left text-sm"><thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-400"><tr>{['Batch ID','Product','Quantity','Quality','Status','State','Received','Action'].map((head) => <th key={head} className="px-5 py-4">{head}</th>)}</tr></thead><tbody>{filtered.map((row) => <tr key={row[0]} className="border-t border-slate-100"><td className="px-5 py-4 font-bold">{row[0]}</td><td className="px-5 py-4 flex items-center gap-2"><span className="rounded-lg bg-emerald-50 p-2 text-emerald-600"><Package size={15} /></span>{row[1]}</td>{row.slice(2).map((cell, index) => <td key={`${row[0]}-${index}`} className="px-5 py-4 text-slate-600">{cell}</td>)}<td className="px-5 py-4"><button className="font-bold text-emerald-700">View</button></td></tr>)}</tbody></table>{!filtered.length && <p className="p-10 text-center text-sm text-slate-500">No inventory records found.</p>}</div></div></FreshGuardShell>; }
+
+import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { Package, Plus, Search } from 'lucide-react';
+import { FreshGuardShell } from '@/components/freshguard-shell';
+import { createInventory, getInventory } from '@/lib/api';
+
+export default function InventoryPage() {
+  const [rows, setRows] = useState<string[][]>([]);
+  const [query, setQuery] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [formOpen, setFormOpen] = useState(false);
+
+  const loadInventory = useCallback(async () => {
+    setError('');
+    try {
+      setRows(await getInventory());
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Inventory could not be loaded.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    getInventory()
+      .then((items) => { if (active) setRows(items); })
+      .catch((cause: unknown) => { if (active) setError(cause instanceof Error ? cause.message : 'Inventory could not be loaded.'); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
+
+  const submitBatch = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    setSaving(true);
+    setError('');
+    try {
+      await createInventory({
+        batch_id: String(formData.get('batch_id')).trim(),
+        product: String(formData.get('product')).trim(),
+        quantity: Number(formData.get('quantity')),
+        unit: String(formData.get('unit')),
+      });
+      form.reset();
+      setFormOpen(false);
+      await loadInventory();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Inventory batch could not be saved.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const filtered = rows.filter((row) => row.join(' ').toLowerCase().includes(query.toLowerCase()));
+
+  return (
+    <FreshGuardShell>
+      <div className="space-y-7">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div>
+            <p className="mb-2 text-sm font-semibold text-emerald-700">Warehouse stock</p>
+            <h1 className="text-3xl font-bold">Inventory</h1>
+            <p className="mt-2 text-slate-500">Persisted batches and their latest warehouse status.</p>
+          </div>
+          <button onClick={() => setFormOpen((open) => !open)} className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white">
+            <Plus size={17} />{formOpen ? 'Close form' : 'Add batch'}
+          </button>
+        </div>
+
+        {formOpen && <form onSubmit={submitBatch} className="grid gap-3 rounded-2xl border border-slate-200 bg-white p-5 sm:grid-cols-2 lg:grid-cols-4">
+          <input required name="batch_id" placeholder="Batch ID" className="rounded-xl border border-slate-200 px-3 py-3 text-sm" />
+          <input required name="product" placeholder="Product name" className="rounded-xl border border-slate-200 px-3 py-3 text-sm" />
+          <input required name="quantity" type="number" min="0.01" step="0.01" placeholder="Quantity" className="rounded-xl border border-slate-200 px-3 py-3 text-sm" />
+          <div className="flex gap-2">
+            <select name="unit" className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3 py-3 text-sm"><option value="kg">kg</option><option value="boxes">boxes</option><option value="units">units</option></select>
+            <button disabled={saving} className="rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white disabled:opacity-60">{saving ? 'Saving…' : 'Save'}</button>
+          </div>
+        </form>}
+
+        {error && <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700">{error}</p>}
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search produce or batch…" className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm outline-none focus:border-emerald-500" />
+        </div>
+        <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+          <table className="w-full min-w-[760px] text-left text-sm">
+            <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-400">
+              <tr>{['Batch ID', 'Product', 'Quantity', 'Quality', 'Status', 'State', 'Received'].map((head) => <th key={head} className="px-5 py-4">{head}</th>)}</tr>
+            </thead>
+            <tbody>
+              {filtered.map((row) => <tr key={row[0]} className="border-t border-slate-100">
+                <td className="px-5 py-4 font-bold">{row[0]}</td>
+                <td className="px-5 py-4"><span className="mr-2 inline-flex rounded-lg bg-emerald-50 p-2 text-emerald-600"><Package size={15} /></span>{row[1]}</td>
+                {row.slice(2).map((cell, index) => <td key={`${row[0]}-${index}`} className="px-5 py-4 text-slate-600">{cell}</td>)}
+              </tr>)}
+            </tbody>
+          </table>
+          {loading && <p className="p-10 text-center text-sm text-slate-500">Loading inventory…</p>}
+          {!loading && !error && !filtered.length && <p className="p-10 text-center text-sm text-slate-500">No inventory records found.</p>}
+        </div>
+      </div>
+    </FreshGuardShell>
+  );
+}
