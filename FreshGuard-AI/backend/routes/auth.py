@@ -45,3 +45,6 @@ def serialize_user(user: dict[str, object]) -> dict[str, object]:
         'warehouse_id': warehouse['warehouse_id'],
         'role': user['role'],
     }
+
+
+
