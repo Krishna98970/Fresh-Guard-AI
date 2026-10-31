@@ -99,3 +99,5 @@ export default function InspectionResult({ result, preview, onNew }: { result: A
     </div>
   );
 }
+
+
