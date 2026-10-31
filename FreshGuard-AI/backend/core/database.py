@@ -45,3 +45,7 @@ def ensure_indexes(db: Database[dict[str, object]] = database) -> None:
     db.transit_events.create_index([('dispatch_id', ASCENDING), ('created_at', DESCENDING)])
     db.alerts.create_index([('warehouse_id', ASCENDING), ('created_at', DESCENDING)])
     db.customer_feedback.create_index([('order_id', ASCENDING)], unique=True)
+
+
+
+
