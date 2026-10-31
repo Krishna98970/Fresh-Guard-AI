@@ -164,3 +164,6 @@ def temperature_analytics(
             for row in db.temperature_readings.find(query).sort('created_at', 1).limit(2000)
         ],
     }
+
+
+
