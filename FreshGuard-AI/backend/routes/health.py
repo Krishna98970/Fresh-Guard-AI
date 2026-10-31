@@ -11,3 +11,5 @@ router = APIRouter(prefix='/api/health', tags=['Health'])
 def health(db: Database[dict[str, object]] = Depends(get_db)) -> dict[str, object]:
     db.command('ping')
     return {'status': 'healthy', 'database': 'connected', **model_manager.status}
+
+
