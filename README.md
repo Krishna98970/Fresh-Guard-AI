@@ -18,7 +18,7 @@ Inspection, inspection history, dashboard metrics, inventory, and the order-to-d
 
 ## Implemented backend workflow
 
-The API persists orders, linked inspections, quality overrides, rule-based packing recommendations and checks, riders, dispatches, delivery updates, temperature readings, rule-derived transit risk, alerts, and customer tracking/feedback. Customer feedback is accepted only once after delivery. See the backend guide for endpoints, authorization, thresholds, required provider tokens, and current integration boundaries.
+The API persists orders, linked inspections, quality overrides, rule-based packing recommendations and checks, riders, dispatches, delivery updates, temperature readings, rule-derived transit risk, alerts, and customer tracking/feedback. Customer feedback is accepted only once after delivery, See the backend guide for endpoints, authorization, thresholds, required provider tokens, and current integration boundaries.
 
 The telemetry page includes an operator-controlled, visibly labeled `DEMO` simulation. It persists generated samples and rule-triggered events through the API, but its plotted coordinates are fictional and are not live GPS or a street map. Physical device and GPS-provider integration still require hardware/provider configuration and a trusted `TELEMETRY_DEVICE_TOKEN`. The produce decision thresholds remain governed by the trained classifier and backend configuration; temperature settings do not alter model classifications.
 
